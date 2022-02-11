@@ -23,5 +23,5 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     Route::get('pokemon', 'PokemonController@index');
     
     // Search pokemon by parameters
-    Route::get('tasks/{id}', 'TaskController@show');
+    Route::get('pokemon/{id}', 'PokemonController@show');
 });
