@@ -13,6 +13,15 @@ use App\Http\Controllers;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+Route::post('login', 'ApiController@login');
+Route::post('register', 'ApiController@register');
 
-// Pokemon list
-Route::get('pokemon', 'PokemonController@index');
+Route::group(['middleware' => 'auth.jwt'], function () {
+    Route::get('logout', 'ApiController@logout');
+
+    // Pokemon list
+    Route::get('pokemon', 'PokemonController@index');
+    
+    // Search pokemon by parameters
+    Route::get('tasks/{id}', 'TaskController@show');
+});
