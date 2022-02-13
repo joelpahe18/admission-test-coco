@@ -23,5 +23,8 @@ Route::group(['middleware' => 'auth.jwt'], function () {
     Route::get('pokemon', 'PokemonController@index');
     
     // Search pokemon by parameters
-    Route::get('pokemon/{id}', 'PokemonController@show');
+    Route::post('pokemon', 'PokemonController@show');
+
+    // Send data to api coco
+    Route::post('send_data', 'PokemonController@send_data');
 });
