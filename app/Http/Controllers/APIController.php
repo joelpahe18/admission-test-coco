@@ -11,11 +11,6 @@ use App\Http\Requests\RegistrationFormRequest;
 class APIController extends Controller
 {
     /**
-     * @var bool
-     */
-    public $loginAfterSignUp = true;
-
-    /**
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -74,10 +69,6 @@ class APIController extends Controller
         $user->email = $request->email;
         $user->password = bcrypt($request->password);
         $user->save();
-
-        if ($this->loginAfterSignUp) {
-            return $this->login($request);
-        }
 
         return response()->json([
             'success'   =>  true,

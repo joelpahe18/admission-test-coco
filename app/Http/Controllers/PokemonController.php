@@ -16,67 +16,71 @@ class PokemonController extends Controller
 	 *
 	 * @return \Illuminate\Http\Response
 	 */
-	public function index( PokemonFormRequest $request )
-	{
+	public function index( PokemonFormRequest $request ) {
+		$base_url = config("constants.BASE_URL");
+
 		$data = $request->all();
 
 		$limit = ( isset( $data['limit'] ) ) ? $data['limit'] : 100;
 
-		$ch = curl_init();
-
 		// set URL and other appropriate options
 		$options = array(
-			CURLOPT_URL 			=> 'https://pokeapi.co/api/v2/pokemon?limit='.$limit,
+			CURLOPT_URL 			=> $base_url.'pokemon?limit='.$limit,
 			CURLOPT_HEADER 			=> false,
 			CURLOPT_CUSTOMREQUEST 	=> 'GET',
 		);
 
-		$opts = curl_setopt_array($ch, $options);
-		
-		if( $opts === false )
-			echo "Opciones mal configuradas...";
-
-		// grab URL and pass it to the browser
-		$exec = curl_exec($ch);
-
-		if( $exec === false ){
-			return response()->json([
-				'success'   =>  false,
-				'message'   =>  'Failed request.',
-				'data'      =>  null
-			], 500);
-		}
-
-		// close cURL resource, and free up system resources
-		curl_close($ch);
-
-		return response()->json([
-			'success'   =>  true,
-			'message'   =>  'Successful request.',
-			'data'      =>  $exec,
-			'codigo'    =>  200
-		], 200);
+		return $this->curl_structure($options);
 	}
 
 	/**
-	 * Display a data of the pokemon.
+	 * Display a dataset of the pokemon.
 	 *
 	 * @return \Illuminate\Http\Response
 	 */
-	public function show( PokemonFormRequest $request )
-	{
+	public function show( Request $request ) {
+		$response = array();
+		
+		$base_url = config("constants.BASE_URL");
+
 		$data = $request->all();
 
-		$limit = ( isset( $data['limit'] ) ) ? $data['limit'] : 100;
+		$endpoints = explode( ",", $data['endpoint'] );
 
-		$ch = curl_init();
+		$parameters = isset($data['parameter']) && !empty($data['parameter']) ? explode( ",", $data['parameter'] ) : null;
+
+		foreach( $endpoints as $key => $endpoint ) {
+			// set URL and other appropriate options
+			$options = array(
+				CURLOPT_URL 			=> ($base_url.''.$endpoint).(isset($parameters) ? ('/'.$parameters[$key]) : '' ),
+				CURLOPT_HEADER 			=> false,
+				CURLOPT_CUSTOMREQUEST 	=> 'GET',
+			);
+
+			$response[$endpoint] = $this->curl_structure($options);
+		}
+
+		return $response;
+	}
+	
+	public function send_data(Request $request) {
+		$base_url = config("constants.BASE_URL_SEND");
+		
+		$data = $request->all();
 
 		// set URL and other appropriate options
 		$options = array(
-			CURLOPT_URL 			=> 'https://pokeapi.co/api/v2/pokemon?limit='.$limit,
+			CURLOPT_URL 			=> $base_url,
 			CURLOPT_HEADER 			=> false,
-			CURLOPT_CUSTOMREQUEST 	=> 'GET',
+			CURLOPT_CUSTOMREQUEST 	=> 'POST',
+			CURLOPT_POSTFIELDS 		=> $data
 		);
+
+		return $this->curl_structure($options);
+	}
+
+	function curl_structure($options) {
+		$ch = curl_init();
 
 		$opts = curl_setopt_array($ch, $options);
 		
@@ -87,7 +91,7 @@ class PokemonController extends Controller
 		$exec = curl_exec($ch);
 
 		if( $exec === false ){
-			return response()->json([
+			echo response()->json([
 				'success'   =>  false,
 				'message'   =>  'Failed request.',
 				'data'      =>  null
@@ -97,7 +101,7 @@ class PokemonController extends Controller
 		// close cURL resource, and free up system resources
 		curl_close($ch);
 
-		return response()->json([
+		echo response()->json([
 			'success'   =>  true,
 			'message'   =>  'Successful request.',
 			'data'      =>  $exec,
